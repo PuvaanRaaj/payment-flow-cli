@@ -1,48 +1,35 @@
-# Sample Payment Processing Input
-# This file demonstrates all major commands and flows
-
-# === Happy Path: Full Payment Flow ===
-CREATE P001 100.00 USD M001 # Standard payment
+CREATE P001 100.00 USD M001
 AUTHORIZE P001
 CAPTURE P001
 SETTLE P001
 STATUS P001
 
-# === Void Flow ===
 CREATE P002 50.00 EUR M002
 AUTHORIZE P002
-VOID P002 CUSTOMER_REQUEST # Void with reason
+VOID P002 CUSTOMER_REQUEST
 STATUS P002
 
-# === Refund Flow ===
 CREATE P003 75.50 GBP M001
 AUTHORIZE P003
 CAPTURE P003
-REFUND P003 # Full refund
+REFUND P003
 STATUS P003
 
-# === Idempotency Tests ===
 CREATE P004 200.00 MYR M003
-CREATE P004 200.00 MYR M003 # Idempotent - same attributes
+CREATE P004 200.00 MYR M003
 AUTHORIZE P004
 CAPTURE P004
 SETTLE P004
-SETTLE P004 # Idempotent settle
+SETTLE P004
 
-# === Audit Command ===
-AUDIT P001 # Should have no side effects
+AUDIT P001
 
-
-# === List All Payments ===
 LIST
 
-# === Settlement Batch ===
 SETTLEMENT BATCH2023Q4
 
-# === Error Cases (continue processing) ===
 STATUS NONEXISTENT
-CAPTURE P001 # Already settled
-REFUND P002 # Wrong state (voided)
+CAPTURE P001
+REFUND P002
 
-# Exit cleanly
 EXIT

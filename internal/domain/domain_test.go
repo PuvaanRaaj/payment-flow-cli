@@ -191,3 +191,81 @@ func TestSetFailed(t *testing.T) {
 		t.Errorf("History length = %v, want 2", len(p.History))
 	}
 }
+
+func TestSetVoidReason(t *testing.T) {
+	amount := big.NewRat(100, 1)
+	p := NewPayment("P001", amount, "USD", "M001")
+
+	p.SetVoidReason("CUSTOMER_REQUEST")
+
+	if p.VoidReason != "CUSTOMER_REQUEST" {
+		t.Errorf("VoidReason = %v, want CUSTOMER_REQUEST", p.VoidReason)
+	}
+}
+
+func TestFormatAmount(t *testing.T) {
+	amount := big.NewRat(10050, 100) // 100.50
+	p := NewPayment("P001", amount, "USD", "M001")
+
+	formatted := p.FormatAmount()
+	if formatted != "100.5" {
+		t.Errorf("FormatAmount() = %v, want 100.5", formatted)
+	}
+}
+
+func TestFormatRat_Nil(t *testing.T) {
+	result := FormatRat(nil)
+	if result != "0" {
+		t.Errorf("FormatRat(nil) = %v, want 0", result)
+	}
+}
+
+func TestPaymentEquals_DifferentMerchant(t *testing.T) {
+	amount := big.NewRat(100, 1)
+	p1 := NewPayment("P001", amount, "USD", "M001")
+	p2 := NewPayment("P001", amount, "USD", "M002")
+
+	if p1.Equals(p2) {
+		t.Error("p1 should not equal p2 (different merchant)")
+	}
+}
+
+func TestCanTransition_UnknownState(t *testing.T) {
+	// Test transition from unknown state
+	if CanTransition("UNKNOWN_STATE", StateAuthorized) {
+		t.Error("CanTransition from unknown state should return false")
+	}
+}
+
+// Test error types
+func TestInvalidTransitionError(t *testing.T) {
+	err := NewInvalidTransitionError("INITIATED", "SETTLED")
+	expected := "invalid transition from INITIATED to SETTLED"
+	if err.Error() != expected {
+		t.Errorf("Error() = %v, want %v", err.Error(), expected)
+	}
+}
+
+func TestCreateConflictError(t *testing.T) {
+	err := NewCreateConflictError("P001")
+	expected := "create conflict for payment P001: existing payment marked as FAILED"
+	if err.Error() != expected {
+		t.Errorf("Error() = %v, want %v", err.Error(), expected)
+	}
+}
+
+func TestParseError(t *testing.T) {
+	err := NewParseError("invalid command")
+	expected := "invalid command"
+	if err.Error() != expected {
+		t.Errorf("Error() = %v, want %v", err.Error(), expected)
+	}
+}
+
+func TestValidationError(t *testing.T) {
+	err := NewValidationError("amount", "must be positive")
+	expected := "validation error for amount: must be positive"
+	if err.Error() != expected {
+		t.Errorf("Error() = %v, want %v", err.Error(), expected)
+	}
+}

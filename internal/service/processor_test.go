@@ -405,3 +405,211 @@ func TestVoidFromInitiated(t *testing.T) {
 		t.Errorf("VOID result = %v, want 'voided'", result)
 	}
 }
+
+// Additional tests for 100% coverage
+
+func TestRefundWithAmount(t *testing.T) {
+	p := newTestProcessor()
+
+	p.Execute(parseCmd(t, "CREATE P001 100.00 USD M001"))
+	p.Execute(parseCmd(t, "AUTHORIZE P001"))
+	p.Execute(parseCmd(t, "CAPTURE P001"))
+
+	result, err := p.Execute(parseCmd(t, "REFUND P001 50.00"))
+	if err != nil {
+		t.Fatalf("REFUND with amount failed: %v", err)
+	}
+	if !strings.Contains(result, "50.00") {
+		t.Errorf("REFUND result = %v, want amount in output", result)
+	}
+}
+
+func TestAuthorizeNotFound(t *testing.T) {
+	p := newTestProcessor()
+
+	_, err := p.Execute(parseCmd(t, "AUTHORIZE NONEXISTENT"))
+	if err == nil {
+		t.Error("AUTHORIZE for nonexistent payment should fail")
+	}
+}
+
+func TestCaptureNotFound(t *testing.T) {
+	p := newTestProcessor()
+
+	_, err := p.Execute(parseCmd(t, "CAPTURE NONEXISTENT"))
+	if err == nil {
+		t.Error("CAPTURE for nonexistent payment should fail")
+	}
+}
+
+func TestVoidNotFound(t *testing.T) {
+	p := newTestProcessor()
+
+	_, err := p.Execute(parseCmd(t, "VOID NONEXISTENT"))
+	if err == nil {
+		t.Error("VOID for nonexistent payment should fail")
+	}
+}
+
+func TestRefundNotFound(t *testing.T) {
+	p := newTestProcessor()
+
+	_, err := p.Execute(parseCmd(t, "REFUND NONEXISTENT"))
+	if err == nil {
+		t.Error("REFUND for nonexistent payment should fail")
+	}
+}
+
+func TestSettleNotFound(t *testing.T) {
+	p := newTestProcessor()
+
+	_, err := p.Execute(parseCmd(t, "SETTLE NONEXISTENT"))
+	if err == nil {
+		t.Error("SETTLE for nonexistent payment should fail")
+	}
+}
+
+func TestAuditNotFound(t *testing.T) {
+	p := newTestProcessor()
+
+	_, err := p.Execute(parseCmd(t, "AUDIT NONEXISTENT"))
+	if err == nil {
+		t.Error("AUDIT for nonexistent payment should fail")
+	}
+}
+
+func TestExecuteExit(t *testing.T) {
+	p := newTestProcessor()
+
+	result, err := p.Execute(parseCmd(t, "EXIT"))
+	if err != nil {
+		t.Errorf("EXIT failed: %v", err)
+	}
+	if result != "" {
+		t.Errorf("EXIT result = %v, want empty", result)
+	}
+}
+
+func TestExecuteUnknownCommand(t *testing.T) {
+	p := newTestProcessor()
+
+	// Create a command manually with unknown name
+	cmd := &parser.Command{Name: "UNKNOWN", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("Unknown command should fail")
+	}
+}
+
+func TestSettlementNoSettledPayments(t *testing.T) {
+	p := newTestProcessor()
+
+	// Create but don't settle
+	p.Execute(parseCmd(t, "CREATE P001 100.00 USD M001"))
+	p.Execute(parseCmd(t, "AUTHORIZE P001"))
+	p.Execute(parseCmd(t, "CAPTURE P001"))
+
+	result, err := p.Execute(parseCmd(t, "SETTLEMENT BATCH001"))
+	if err != nil {
+		t.Fatalf("SETTLEMENT failed: %v", err)
+	}
+	if !strings.Contains(result, "Settled payments: 0") {
+		t.Errorf("SETTLEMENT result = %v, want 'Settled payments: 0'", result)
+	}
+}
+
+// Tests for empty args validation
+
+func TestCreateEmptyArgs(t *testing.T) {
+	p := newTestProcessor()
+	cmd := &parser.Command{Name: "CREATE", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("CREATE with empty args should fail")
+	}
+}
+
+func TestAuthorizeEmptyArgs(t *testing.T) {
+	p := newTestProcessor()
+	cmd := &parser.Command{Name: "AUTHORIZE", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("AUTHORIZE with empty args should fail")
+	}
+}
+
+func TestCaptureEmptyArgs(t *testing.T) {
+	p := newTestProcessor()
+	cmd := &parser.Command{Name: "CAPTURE", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("CAPTURE with empty args should fail")
+	}
+}
+
+func TestVoidEmptyArgs(t *testing.T) {
+	p := newTestProcessor()
+	cmd := &parser.Command{Name: "VOID", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("VOID with empty args should fail")
+	}
+}
+
+func TestRefundEmptyArgs(t *testing.T) {
+	p := newTestProcessor()
+	cmd := &parser.Command{Name: "REFUND", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("REFUND with empty args should fail")
+	}
+}
+
+func TestSettleEmptyArgs(t *testing.T) {
+	p := newTestProcessor()
+	cmd := &parser.Command{Name: "SETTLE", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("SETTLE with empty args should fail")
+	}
+}
+
+func TestSettlementEmptyArgs(t *testing.T) {
+	p := newTestProcessor()
+	cmd := &parser.Command{Name: "SETTLEMENT", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("SETTLEMENT with empty args should fail")
+	}
+}
+
+func TestStatusEmptyArgs(t *testing.T) {
+	p := newTestProcessor()
+	cmd := &parser.Command{Name: "STATUS", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("STATUS with empty args should fail")
+	}
+}
+
+func TestAuditEmptyArgs(t *testing.T) {
+	p := newTestProcessor()
+	cmd := &parser.Command{Name: "AUDIT", Args: []string{}}
+	_, err := p.Execute(cmd)
+	if err == nil {
+		t.Error("AUDIT with empty args should fail")
+	}
+}
+
+func TestAuthorizeInvalidTransition(t *testing.T) {
+	p := newTestProcessor()
+
+	p.Execute(parseCmd(t, "CREATE P001 100.00 USD M001"))
+	p.Execute(parseCmd(t, "AUTHORIZE P001"))
+
+	// Try to authorize again - should fail
+	_, err := p.Execute(parseCmd(t, "AUTHORIZE P001"))
+	if err == nil {
+		t.Error("AUTHORIZE twice should fail")
+	}
+}

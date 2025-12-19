@@ -1,0 +1,24 @@
+mode: set
+payment-sim/internal/parser/parser.go:35.43,37.16 2 1
+payment-sim/internal/parser/parser.go:37.16,39.3 1 1
+payment-sim/internal/parser/parser.go:42.2,43.22 2 1
+payment-sim/internal/parser/parser.go:43.22,45.3 1 0
+payment-sim/internal/parser/parser.go:48.2,52.12 3 1
+payment-sim/internal/parser/parser.go:52.12,54.3 1 1
+payment-sim/internal/parser/parser.go:57.2,58.16 2 1
+payment-sim/internal/parser/parser.go:58.16,60.3 1 1
+payment-sim/internal/parser/parser.go:62.2,65.8 1 1
+payment-sim/internal/parser/parser.go:69.37,71.2 1 1
+payment-sim/internal/parser/parser.go:75.88,78.31 2 1
+payment-sim/internal/parser/parser.go:78.31,80.33 1 1
+payment-sim/internal/parser/parser.go:80.33,82.37 1 1
+payment-sim/internal/parser/parser.go:82.37,83.10 1 1
+payment-sim/internal/parser/parser.go:86.4,87.12 2 1
+payment-sim/internal/parser/parser.go:92.3,92.36 1 1
+payment-sim/internal/parser/parser.go:92.36,94.4 1 1
+payment-sim/internal/parser/parser.go:98.3,98.29 1 1
+payment-sim/internal/parser/parser.go:102.2,102.31 1 1
+payment-sim/internal/parser/parser.go:102.31,104.3 1 1
+payment-sim/internal/parser/parser.go:106.2,106.18 1 1
+payment-sim/internal/parser/parser.go:110.39,113.2 2 1
+payment-sim/internal/parser/parser.go:116.51,119.2 2 1
