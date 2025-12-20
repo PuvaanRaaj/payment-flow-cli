@@ -1,4 +1,17 @@
 mode: set
+payment-sim/internal/app/error_reader.go:18.69,25.2 1 1
+payment-sim/internal/app/error_reader.go:27.57,28.15 1 1
+payment-sim/internal/app/error_reader.go:28.15,30.3 1 0
+payment-sim/internal/app/error_reader.go:32.2,32.26 1 1
+payment-sim/internal/app/error_reader.go:32.26,33.33 1 1
+payment-sim/internal/app/error_reader.go:33.33,36.4 2 1
+payment-sim/internal/app/error_reader.go:37.3,37.19 1 0
+payment-sim/internal/app/error_reader.go:40.2,42.24 3 1
+payment-sim/internal/app/error_reader.go:42.24,44.3 1 1
+payment-sim/internal/app/error_reader.go:47.2,47.45 1 1
+payment-sim/internal/app/error_reader.go:47.45,50.18 2 0
+payment-sim/internal/app/error_reader.go:50.18,53.4 2 0
+payment-sim/internal/app/error_reader.go:56.2,58.20 3 1
 payment-sim/internal/app/runner.go:22.89,28.2 1 1
 payment-sim/internal/app/runner.go:31.30,32.22 1 1
 payment-sim/internal/app/runner.go:32.22,36.17 2 1
@@ -12,5 +25,5 @@ payment-sim/internal/app/runner.go:54.17,56.12 2 1
 payment-sim/internal/app/runner.go:60.3,60.19 1 1
 payment-sim/internal/app/runner.go:60.19,62.4 1 1
 payment-sim/internal/app/runner.go:66.2,66.39 1 1
-payment-sim/internal/app/runner.go:66.39,68.3 1 0
+payment-sim/internal/app/runner.go:66.39,68.3 1 1
 payment-sim/internal/app/runner.go:70.2,70.12 1 1

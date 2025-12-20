@@ -154,3 +154,21 @@ func TestRunner_EmptyResult(t *testing.T) {
 		t.Errorf("Output should be empty, got: %v", result)
 	}
 }
+
+func TestRunner_ScannerError(t *testing.T) {
+	// Use ErrorReader that returns an error after some data
+	errReader := NewErrorReader("CREATE P001 100.00 USD M001\n", 30, ErrMockRead)
+	var output bytes.Buffer
+
+	memStore := store.NewMemoryStore()
+	processor := service.NewProcessor(memStore, nil)
+	runner := NewRunner(processor, errReader, &output)
+
+	err := runner.Run()
+	if err == nil {
+		t.Error("Expected error from scanner, got nil")
+	}
+	if !strings.Contains(err.Error(), "mock read error") {
+		t.Errorf("Expected mock read error, got: %v", err)
+	}
+}
