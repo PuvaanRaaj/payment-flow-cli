@@ -87,7 +87,12 @@ func (p *Processor) handleCreate(args []string) (string, error) {
 	// Check for existing payment
 	existing, err := p.store.Get(paymentID)
 	if err == nil {
-		// Payment exists - check for idempotency
+		// Payment exists - check if it has progressed beyond INITIATED
+		if existing.State != domain.StateInitiated {
+			return "", fmt.Errorf("payment %s already exists in state %s (cannot recreate progressed payments)", paymentID, existing.State)
+		}
+
+		// Payment still in INITIATED - check for idempotency
 		newPayment := domain.NewPayment(paymentID, amount, currency, merchantID)
 		if existing.Equals(newPayment) {
 			// Idempotent - same attributes, no error
@@ -263,11 +268,9 @@ func (p *Processor) handleSettlement(args []string) (string, error) {
 	// Get all settled payments for summary
 	payments, _ := p.store.List()
 	settledCount := 0
-	var totalAmount big.Rat
 	for _, payment := range payments {
 		if payment.State == domain.StateSettled {
 			settledCount++
-			totalAmount.Add(&totalAmount, payment.Amount)
 		}
 	}
 

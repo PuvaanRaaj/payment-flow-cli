@@ -117,6 +117,24 @@ docker run -it payment-sim
     └──────────┘                 └──────────┘
 ```
 
+## Parsing Rules
+
+- Lines may contain inline comments starting with `#`
+- `#` is treated as a comment delimiter **ONLY** if it appears after the 3rd token (4th position or later)
+- A line starting with `#` is malformed input, NOT a comment
+- Comments must have at least 3 tokens total (command + 2 arguments) before the `#`
+
+### Examples
+
+```
+CREATE P1001 10.00 MYR M01 # test     ✓ Valid (# at position 5, after 3rd arg)
+VOID P001 FRAUD # suspicious          ✓ Valid (# at position 4, after 2nd arg)
+LIST # show all                       ✗ Malformed (only 1 token before #)
+AUTHORIZE P1001 # retry               ✗ Malformed (only 2 tokens before #)
+# CREATE P1002 11.00 MYR M01          ✗ Malformed (# at start is not a comment)
+CREATE # P1003 10.00 MYR M01          ✗ Malformed (# at position 2)
+```
+
 ## Configuration
 
 ### PRE_SETTLEMENT_THRESHOLD
@@ -131,31 +149,33 @@ export PRE_SETTLEMENT_THRESHOLD=1000
 ./payment-sim
 ```
 
-When enabled, payments with amounts greater than or equal to the threshold will automatically move to PRE_SETTLEMENT_REVIEW after authorization, requiring explicit CAPTURE to proceed.
+**How it works:**
+
+When enabled, payments with amounts greater than or equal to the threshold will automatically move to `PRE_SETTLEMENT_REVIEW` state after authorization. They must be explicitly captured to proceed to SETTLED.
+
+**Example flow with threshold=1000:**
+
+```
+# Low-value payment (normal flow)
+CREATE P001 500.00 USD M001
+AUTHORIZE P001                          # → state: AUTHORIZED
+CAPTURE P001                            # → state: CAPTURED
+
+# High-value payment (review flow)
+CREATE P002 1500.00 USD M001
+AUTHORIZE P002                          # → state: PRE_SETTLEMENT_REVIEW (auto)
+CAPTURE P002                            # → state: CAPTURED (manual approval)
+```
 
 Set to `0` or leave unset to disable this feature (default).
-
-## Parsing Rules
-
-- Lines may contain inline comments starting with `#`
-- `#` is treated as a comment delimiter **ONLY** if it appears after all required arguments
-- A line starting with `#` is malformed input, NOT a comment
-
-### Examples
-
-```
-CREATE P1001 10.00 MYR M01 # test     ✓ Valid (comment after 4 required args)
-AUTHORIZE P1001 # retry               ✓ Valid (comment after 1 required arg)
-# CREATE P1002 11.00 MYR M01          ✗ Malformed (# at start is not a comment)
-CREATE # P1003 10.00 MYR M01          ✗ Malformed (# before required args met)
-```
 
 ## Idempotency
 
 ### CREATE
 
-- Repeated CREATE with the same `payment_id` and identical `amount`, `currency`, `merchant_id` → idempotent (no error)
+- Repeated CREATE with the same `payment_id` and identical `amount`, `currency`, `merchant_id` **while in INITIATED state** → idempotent (no error)
 - Repeated CREATE with same `payment_id` but different attributes → existing payment marked as FAILED, new CREATE rejected
+- Repeated CREATE after payment has progressed beyond INITIATED → error (cannot recreate progressed payments)
 
 ### SETTLE
 

@@ -613,3 +613,37 @@ func TestAuthorizeInvalidTransition(t *testing.T) {
 		t.Error("AUTHORIZE twice should fail")
 	}
 }
+
+func TestCreateAfterPaymentProgressed(t *testing.T) {
+	p := newTestProcessor()
+
+	p.Execute(parseCmd(t, "CREATE P001 100.00 USD M001"))
+	p.Execute(parseCmd(t, "AUTHORIZE P001"))
+
+	// Try to CREATE again with same attrs - should fail because state is AUTHORIZED
+	_, err := p.Execute(parseCmd(t, "CREATE P001 100.00 USD M001"))
+	if err == nil {
+		t.Error("CREATE should fail when payment has progressed beyond INITIATED")
+	}
+	if !strings.Contains(err.Error(), "already exists in state") {
+		t.Errorf("Expected 'already exists in state' error, got: %v", err)
+	}
+}
+
+func TestCreateAfterSettle(t *testing.T) {
+	p := newTestProcessor()
+
+	p.Execute(parseCmd(t, "CREATE P001 100.00 USD M001"))
+	p.Execute(parseCmd(t, "AUTHORIZE P001"))
+	p.Execute(parseCmd(t, "CAPTURE P001"))
+	p.Execute(parseCmd(t, "SETTLE P001"))
+
+	// Try to CREATE again - should fail because payment is SETTLED
+	_, err := p.Execute(parseCmd(t, "CREATE P001 100.00 USD M001"))
+	if err == nil {
+		t.Error("CREATE should fail when payment is in SETTLED state")
+	}
+	if !strings.Contains(err.Error(), "SETTLED") {
+		t.Errorf("Expected SETTLED in error, got: %v", err)
+	}
+}

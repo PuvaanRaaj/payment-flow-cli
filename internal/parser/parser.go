@@ -71,16 +71,27 @@ func tokenize(line string) []string {
 }
 
 // extractArgs extracts arguments from tokens, handling the comment rules.
-// Comments start with '#' but ONLY if they appear after all required args.
+// Comments start with '#' but ONLY after the THIRD TOKEN (command name + 2 args).
+// This means: COMMAND ARG1 ARG2 # comment is valid (# is at position 4)
+// But: COMMAND # comment or COMMAND ARG1 # comment or COMMAND ARG1 ARG2 # are malformed
 func extractArgs(tokens []string, requiredCount int, cmdName string) ([]string, error) {
 	args := make([]string, 0, requiredCount)
 
-	for _, token := range tokens {
+	for tokenIdx, token := range tokens {
+		// totalTokens is command (1) + current position in args
+		totalTokensSoFar := 1 + tokenIdx + 1
+
 		// Check if we've collected all required args
 		if len(args) >= requiredCount {
-			// Now '#' can start a comment - we can stop processing
+			// Only treat '#' as comment if we have MORE than 3 total tokens
+			// (command + at least 3 arguments: position 4 or later)
 			if strings.HasPrefix(token, "#") {
-				break
+				if totalTokensSoFar > 3 {
+					// Valid comment position (4th token or later)
+					break
+				}
+				// Not enough tokens yet - malformed
+				return nil, fmt.Errorf("malformed input: '#' comment only allowed after third token (found at position %d)", totalTokensSoFar)
 			}
 			// Otherwise, this is an optional argument (e.g., reason_code for VOID)
 			args = append(args, token)
@@ -88,9 +99,9 @@ func extractArgs(tokens []string, requiredCount int, cmdName string) ([]string, 
 		}
 
 		// Still collecting required args
-		// '#' at the start of a token when we need more args is malformed
+		// '#' at the start of a token when we need more args is always malformed
 		if strings.HasPrefix(token, "#") {
-			return nil, fmt.Errorf("malformed input: unexpected '#' in required argument position for %s", cmdName)
+			return nil, fmt.Errorf("malformed input: unexpected '#' in required argument position for %s (found at position %d, need position 4+)", cmdName, totalTokensSoFar)
 		}
 
 		// Handle '#' appearing mid-token (e.g., "value#comment")
